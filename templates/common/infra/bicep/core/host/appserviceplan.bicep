@@ -1,11 +1,15 @@
-metadata description = 'Creates an Azure App Service plan.'
+metadata description = 'Creates an Windows or Linux Azure App Service plan.'
 param name string
 param location string = resourceGroup().location
 param tags object = {}
 
-param kind string = ''
-param reserved bool = true
 param sku object
+
+@allowed(['Windows', 'Linux'])
+param OperatingSystem string = 'Linux'
+
+var servicePlanProperties = (OperatingSystem == 'Linux') ? {reserved: true} : {computeMode: 'Dynamic'}
+var kind = (OperatingSystem == 'Linux') ? 'Linux' : ''
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: name
@@ -13,9 +17,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   tags: tags
   sku: sku
   kind: kind
-  properties: {
-    reserved: reserved
-  }
+  properties: servicePlanProperties
 }
 
 output id string = appServicePlan.id
